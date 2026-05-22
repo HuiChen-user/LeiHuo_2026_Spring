@@ -1,4 +1,4 @@
-﻿ using UnityEngine;
+ using UnityEngine;
 #if ENABLE_INPUT_SYSTEM 
 using UnityEngine.InputSystem;
 #endif
@@ -457,14 +457,6 @@ namespace StarterAssets
 
         private void OnControllerColliderHit(ControllerColliderHit hit)
         {
-            if (hit == null || hit.gameObject == null) return;
-            
-            // 使用 GetComponentInParent 能够使得碰撞子物体也能触发父物体的 Reactor
-            TransformCollisionReactor reactor = hit.gameObject.GetComponentInParent<TransformCollisionReactor>();
-            if (reactor != null)
-            {
-                reactor.OnHitByPlayer(hit);
-            }
         }
     }
 }
