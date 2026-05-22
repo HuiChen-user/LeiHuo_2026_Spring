@@ -543,6 +543,30 @@ PrefabInstance:
       propertyPath: CinemachineCameraTarget
       value: 
       objectReference: {fileID: 1368185817}
+    - target: {fileID: 7763055774801950101, guid: 64dce48905ffd9b4293e595fa6941544, type: 3}
+      propertyPath: maxAlpha
+      value: 0.2
+      objectReference: {fileID: 0}
+    - target: {fileID: 7763055774801950101, guid: 64dce48905ffd9b4293e595fa6941544, type: 3}
+      propertyPath: maxRadius
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 7763055774801950101, guid: 64dce48905ffd9b4293e595fa6941544, type: 3}
+      propertyPath: ringSegments
+      value: 81
+      objectReference: {fileID: 0}
+    - target: {fileID: 7763055774801950101, guid: 64dce48905ffd9b4293e595fa6941544, type: 3}
+      propertyPath: cooldownDuration
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 7763055774801950101, guid: 64dce48905ffd9b4293e595fa6941544, type: 3}
+      propertyPath: boundaryLineWidth
+      value: 0.005
+      objectReference: {fileID: 0}
+    - target: {fileID: 7763055774801950101, guid: 64dce48905ffd9b4293e595fa6941544, type: 3}
+      propertyPath: logDetectionChanges
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
