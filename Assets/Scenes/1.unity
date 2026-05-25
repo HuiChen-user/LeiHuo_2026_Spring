@@ -574,6 +574,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 4416926081852918481, guid: 64dce48905ffd9b4293e595fa6941544, type: 3}
       insertIndex: -1
       addedObject: {fileID: 1478591423}
+    - targetCorrespondingSourceObject: {fileID: 4416926081852918481, guid: 64dce48905ffd9b4293e595fa6941544, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1478591432}
   m_SourcePrefab: {fileID: 100100000, guid: 64dce48905ffd9b4293e595fa6941544, type: 3}
 --- !u!199 &483019069 stripped
 ParticleSystemRenderer:
@@ -930,6 +933,7 @@ GameObject:
   - component: {fileID: 984476642}
   - component: {fileID: 984476641}
   - component: {fileID: 984476640}
+  - component: {fileID: 984476644}
   m_Layer: 0
   m_Name: Cube (1)
   m_TagString: Untagged
@@ -1023,6 +1027,33 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &984476644
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 984476639}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e16a7f3a0cb84638a765156134983a17, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  freezeOnEnhancedFieldEnter: 1
+  stayFrozenAfterLeavingField: 1
+  frozenMaterial: {fileID: 2100000, guid: 085d202239608084496d4eab17522172, type: 2}
+  targetRenderers:
+  - {fileID: 984476641}
+  frozenStateObject: {fileID: 0}
+  freezeEffectPrefab: {fileID: 0}
+  canBreakOnlyWhenFrozen: 1
+  destroyWhenBroken: 1
+  destroyDelay: 0.5
+  disableRenderersWhenBroken: 1
+  disableCollidersWhenBroken: 1
+  breakEffectPrefab: {fileID: 0}
+  breakAudioSource: {fileID: 0}
+  logStateChanges: 0
 --- !u!20 &1015848094 stripped
 Camera:
   m_CorrespondingSourceObject: {fileID: 8944336655422409496, guid: f6d148d888ffbf54b9afe9936dfaec1f, type: 3}
@@ -1462,6 +1493,33 @@ MonoBehaviour:
   aimRangeColor: {r: 0.35, g: 0.9, b: 1, a: 0.25}
   carryRangeColor: {r: 0.2, g: 0.65, b: 1, a: 0.18}
   logStateChanges: 0
+--- !u!114 &1478591432
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1478591414}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 00ee27c4a9874b82bd009fb0b3985bb0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  attackMouseButton: 323
+  blockedWhileHeldMouseButton: 324
+  iceBlockCarryController: {fileID: 1478591423}
+  rangeOrigin: {fileID: 0}
+  attackRadius: 1
+  rangeOffset: {x: 0, y: 0.8, z: 0.8}
+  attackableLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  triggerInteraction: 2
+  maxHits: 32
+  ignoreControllerHierarchy: 1
+  showRangeGizmo: 1
+  rangeGizmoColor: {r: 1, g: 0.45, b: 0.2, a: 0.25}
+  logAttacks: 0
 --- !u!1 &1485365170
 GameObject:
   m_ObjectHideFlags: 0
@@ -1916,7 +1974,7 @@ MonoBehaviour:
   iceColliderIsTrigger: 0
   iceColliderSize: {x: 1, y: 1, z: 1}
   ensureCarryableIce: 1
-  meltDelayAfterLeavingField: 300
+  meltDelayAfterLeavingField: 3
   meltMode: 0
   shrinkSpeed: 0.5
   minimumScaleBeforeDestroy: 0.05
@@ -1996,7 +2054,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5044303222945619844, guid: ab57204b4927a9c4abcf6287259b1678, type: 3}
       propertyPath: meltDelayAfterLeavingField
-      value: 100
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 6951557292287125125, guid: ab57204b4927a9c4abcf6287259b1678, type: 3}
       propertyPath: m_Name

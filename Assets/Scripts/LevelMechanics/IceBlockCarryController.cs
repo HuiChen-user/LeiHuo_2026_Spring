@@ -60,6 +60,8 @@ namespace LeiHuo.Gameplay.LevelMechanics
         private bool IsCarryHeld => IsKeyHeld(carryMouseButton);
         private bool ShouldShowCrosshair => IsAimHeld || carriedBlock != null;
 
+        public bool IsCarrying => carriedBlock != null;
+
         private void Awake()
         {
             if (aimCamera == null)
