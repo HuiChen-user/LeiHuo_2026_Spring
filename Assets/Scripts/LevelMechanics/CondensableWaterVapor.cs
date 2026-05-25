@@ -26,6 +26,8 @@ namespace LeiHuo.Gameplay.LevelMechanics
         [SerializeField] private Vector3 iceSize = Vector3.one;
         [SerializeField] private Vector3 iceEulerRotation;
         [SerializeField] private Material fallbackIceMaterial;
+        [SerializeField] private Material enhancedIceMaterial;
+        [SerializeField] private Material waterMaterial;
         [SerializeField] private bool parentIceToVapor;
         [SerializeField] private bool usePrefabScale;
 
@@ -39,8 +41,11 @@ namespace LeiHuo.Gameplay.LevelMechanics
 
         [Header("Melt")]
         [SerializeField, Min(0f)] private float meltDelayAfterLeavingField = 1.5f;
-        [SerializeField] private IceBlockTemperatureState.MeltMode meltMode = IceBlockTemperatureState.MeltMode.ShrinkThenDestroy;
+        [HideInInspector]
+        [SerializeField] private IceBlockTemperatureState.MeltMode meltMode = IceBlockTemperatureState.MeltMode.MeltToWater;
+        [HideInInspector]
         [SerializeField, Min(0.01f)] private float shrinkSpeed = 1f;
+        [HideInInspector]
         [SerializeField, Min(0f)] private float minimumScaleBeforeDestroy = 0.05f;
 
         [Header("Vapor Visual")]
@@ -169,6 +174,8 @@ namespace LeiHuo.Gameplay.LevelMechanics
             {
                 iceState = iceObject.AddComponent<IceBlockTemperatureState>();
             }
+
+            iceState.ConfigureMaterials(enhancedIceMaterial, waterMaterial);
 
             Vector3 finalScale = usePrefabScale && icePrefab != null ? iceObject.transform.localScale : iceSize;
             iceState.Initialize(

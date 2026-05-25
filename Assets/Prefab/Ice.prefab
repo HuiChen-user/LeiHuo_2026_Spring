@@ -123,6 +123,50 @@ MonoBehaviour:
   meltMode: 0
   shrinkSpeed: 0.5
   minimumScaleBeforeDestroy: 0.05
+  useEnhancedMeltSettings: 1
+  enhancedMeltDelayAfterLeavingField: 4.5
+  enhancedMeltMode: 2
+  enhancedShrinkSpeed: 0.5
+  enhancedMinimumScaleBeforeDestroy: 0.05
+  logEnhancedFieldHits: 0
+  enhancedIceMaterial: {fileID: 2100000, guid: 59cd163e28c7a8d478443ca4eb3120e0, type: 2}
+  waterMaterial: {fileID: 2100000, guid: 2b318e4eb46d1f14fa5d8219daee5ffb, type: 2}
+  applyEnhancedMaterial: 1
+  applyWaterMaterialOnMelt: 1
+  restoreOriginalMaterialWhenRefrozen: 1
+  meltToWaterDuration: 1.2
+  waterSpreadMultiplier: 1.6
+  waterThicknessMultiplier: 0.08
+  keepBottomAnchored: 1
+  meltToWaterCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  disableColliderWhenWater: 1
+  waterLifetime: 2.5
+  destroyWaterAfterLifetime: 1
+  showWaterPreviewGizmo: 1
+  waterPreviewColor: {r: 0.2, g: 0.75, b: 1, a: 0.35}
   resetScaleWhenRefrozen: 1
   destroyWhenMelted: 1
   logStateChanges: 0
