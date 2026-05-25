@@ -27,6 +27,15 @@ namespace LeiHuo.Gameplay.TemperatureField
         [SerializeField, Min(0.01f)] private float maxRadius = 5f;
         [SerializeField, Min(0.01f)] private float expandSpeed = 4f;
 
+        [Header("Enhancement")]
+        [SerializeField, Min(1f)] private float enhancedRadiusMultiplier = 1.5f;
+        [SerializeField, Min(1f)] private float enhancedStrengthMultiplier = 1.5f;
+        [SerializeField] private Color enhancedFieldColor = new Color(1f, 0.55f, 0.12f, 0.34f);
+        [SerializeField] private Color enhancedBoundaryColor = new Color(1f, 0.82f, 0.25f, 0.95f);
+        [SerializeField] private Color enhancedGroundProjectionColor = new Color(1f, 0.58f, 0.15f, 0.95f);
+        [SerializeField, Min(1f)] private float enhancedLineWidthMultiplier = 1.25f;
+        [SerializeField] private bool logEnhancementChanges;
+
         [Header("Timing")]
         [SerializeField, Min(0f)] private float maxRadiusHoldDuration = 0.6f;
         [SerializeField, Min(0.01f)] private float fadeDuration = 0.25f;
@@ -54,6 +63,8 @@ namespace LeiHuo.Gameplay.TemperatureField
 
         public float CurrentRadius => currentRadius;
         public bool IsActive => state != FieldState.Idle;
+        public bool HasStoredEnhancement => hasStoredEnhancement;
+        public bool IsCurrentFieldEnhanced => isCurrentFieldEnhanced;
 
         private readonly HashSet<ITemperatureFieldAffectable> affectedObjects = new HashSet<ITemperatureFieldAffectable>();
         private readonly HashSet<ITemperatureFieldAffectable> detectedThisTick = new HashSet<ITemperatureFieldAffectable>();
@@ -79,6 +90,9 @@ namespace LeiHuo.Gameplay.TemperatureField
         private float fadeTimer;
         private float cooldownTimer;
         private float nextDetectionTime;
+        private bool hasStoredEnhancement;
+        private bool isCurrentFieldEnhanced;
+        private bool currentEnhancedFieldAffectedObject;
 
         private void Awake()
         {
@@ -112,6 +126,8 @@ namespace LeiHuo.Gameplay.TemperatureField
             ClearAffectedObjects();
             DestroyVisual();
             state = FieldState.Idle;
+            isCurrentFieldEnhanced = false;
+            currentEnhancedFieldAffectedObject = false;
         }
 
         private void OnValidate()
@@ -119,6 +135,9 @@ namespace LeiHuo.Gameplay.TemperatureField
             initialRadius = Mathf.Max(0f, initialRadius);
             maxRadius = Mathf.Max(0.01f, maxRadius);
             expandSpeed = Mathf.Max(0.01f, expandSpeed);
+            enhancedRadiusMultiplier = Mathf.Max(1f, enhancedRadiusMultiplier);
+            enhancedStrengthMultiplier = Mathf.Max(1f, enhancedStrengthMultiplier);
+            enhancedLineWidthMultiplier = Mathf.Max(1f, enhancedLineWidthMultiplier);
             fadeDuration = Mathf.Max(0.01f, fadeDuration);
             detectionInterval = Mathf.Max(0.01f, detectionInterval);
             maxDetectedColliders = Mathf.Max(1, maxDetectedColliders);
@@ -169,6 +188,8 @@ namespace LeiHuo.Gameplay.TemperatureField
         private void BeginField()
         {
             state = FieldState.Expanding;
+            isCurrentFieldEnhanced = hasStoredEnhancement;
+            currentEnhancedFieldAffectedObject = false;
             currentRadius = initialRadius;
             elapsedTime = 0f;
             holdTimer = 0f;
@@ -176,6 +197,11 @@ namespace LeiHuo.Gameplay.TemperatureField
             nextDetectionTime = 0f;
             CreateVisualIfNeeded();
             UpdateVisual(maxAlpha, 1f);
+
+            if (logEnhancementChanges && isCurrentFieldEnhanced)
+            {
+                Debug.Log($"{name} released an enhanced temperature field.", this);
+            }
         }
 
         private void TickField()
@@ -189,8 +215,9 @@ namespace LeiHuo.Gameplay.TemperatureField
 
             if (state == FieldState.Expanding)
             {
-                currentRadius = Mathf.Min(maxRadius, currentRadius + expandSpeed * Time.deltaTime);
-                if (Mathf.Approximately(currentRadius, maxRadius))
+                float targetRadius = GetCurrentMaxRadius();
+                currentRadius = Mathf.Min(targetRadius, currentRadius + expandSpeed * Time.deltaTime);
+                if (Mathf.Approximately(currentRadius, targetRadius))
                 {
                     state = FieldState.HoldingAtMax;
                     holdTimer = 0f;
@@ -244,10 +271,38 @@ namespace LeiHuo.Gameplay.TemperatureField
         private void EndField()
         {
             ClearAffectedObjects();
+            ConsumeEnhancementIfUsed();
             DestroyVisual();
             cooldownTimer = cooldownDuration;
             state = FieldState.Idle;
             currentRadius = 0f;
+            isCurrentFieldEnhanced = false;
+            currentEnhancedFieldAffectedObject = false;
+        }
+
+        public bool TryGrantEnhancement()
+        {
+            if (hasStoredEnhancement)
+            {
+                return false;
+            }
+
+            hasStoredEnhancement = true;
+
+            if (logEnhancementChanges)
+            {
+                Debug.Log($"{name} gained a temperature field enhancement.", this);
+            }
+
+            return true;
+        }
+
+        public void GrantEnhancement()
+        {
+            if (!TryGrantEnhancement() && logEnhancementChanges)
+            {
+                Debug.Log($"{name} already has a stored temperature field enhancement.", this);
+            }
         }
 
         private void DetectAffectables()
@@ -287,6 +342,7 @@ namespace LeiHuo.Gameplay.TemperatureField
                 if (affectedObjects.Add(affectable))
                 {
                     affectable.OnEnterTemperatureField(context);
+                    MarkEnhancedFieldAffectedObject();
                     if (logDetectionChanges)
                     {
                         Debug.Log($"{name} temperature field entered: {hit.name}", hit);
@@ -294,6 +350,7 @@ namespace LeiHuo.Gameplay.TemperatureField
                 }
 
                 affectable.OnStayTemperatureField(context);
+                MarkEnhancedFieldAffectedObject();
             }
 
             RemoveExitedAffectables(context);
@@ -387,8 +444,47 @@ namespace LeiHuo.Gameplay.TemperatureField
 
         private TemperatureFieldContext CreateContext(Vector3 center)
         {
-            float normalizedRadius = maxRadius <= 0f ? 0f : Mathf.Clamp01(currentRadius / maxRadius);
-            return new TemperatureFieldContext(gameObject, transform, center, currentRadius, normalizedRadius, elapsedTime);
+            float targetRadius = GetCurrentMaxRadius();
+            float normalizedRadius = targetRadius <= 0f ? 0f : Mathf.Clamp01(currentRadius / targetRadius);
+            float strengthMultiplier = isCurrentFieldEnhanced ? enhancedStrengthMultiplier : 1f;
+
+            return new TemperatureFieldContext(
+                gameObject,
+                transform,
+                center,
+                currentRadius,
+                normalizedRadius,
+                elapsedTime,
+                isCurrentFieldEnhanced,
+                strengthMultiplier);
+        }
+
+        private float GetCurrentMaxRadius()
+        {
+            return isCurrentFieldEnhanced ? maxRadius * enhancedRadiusMultiplier : maxRadius;
+        }
+
+        private void MarkEnhancedFieldAffectedObject()
+        {
+            if (isCurrentFieldEnhanced)
+            {
+                currentEnhancedFieldAffectedObject = true;
+            }
+        }
+
+        private void ConsumeEnhancementIfUsed()
+        {
+            if (!isCurrentFieldEnhanced || !currentEnhancedFieldAffectedObject)
+            {
+                return;
+            }
+
+            hasStoredEnhancement = false;
+
+            if (logEnhancementChanges)
+            {
+                Debug.Log($"{name} consumed the stored temperature field enhancement.", this);
+            }
         }
 
         private void ClearAffectedObjects()
@@ -567,17 +663,21 @@ namespace LeiHuo.Gameplay.TemperatureField
                 UpdateVolumeMaterial(alpha);
             }
 
-            UpdateRing(horizontalRing, center, Vector3.up, boundaryColor, boundaryLineWidth, lineAlphaMultiplier);
-            UpdateRing(verticalForwardRing, center, Vector3.forward, boundaryColor, boundaryLineWidth, lineAlphaMultiplier);
-            UpdateRing(verticalSideRing, center, Vector3.right, boundaryColor, boundaryLineWidth, lineAlphaMultiplier);
+            Color activeBoundaryColor = isCurrentFieldEnhanced ? enhancedBoundaryColor : boundaryColor;
+            Color activeGroundColor = isCurrentFieldEnhanced ? enhancedGroundProjectionColor : groundProjectionColor;
+            float lineWidthMultiplier = isCurrentFieldEnhanced ? enhancedLineWidthMultiplier : 1f;
+
+            UpdateRing(horizontalRing, center, Vector3.up, activeBoundaryColor, boundaryLineWidth * lineWidthMultiplier, lineAlphaMultiplier);
+            UpdateRing(verticalForwardRing, center, Vector3.forward, activeBoundaryColor, boundaryLineWidth * lineWidthMultiplier, lineAlphaMultiplier);
+            UpdateRing(verticalSideRing, center, Vector3.right, activeBoundaryColor, boundaryLineWidth * lineWidthMultiplier, lineAlphaMultiplier);
 
             Vector3 groundCenter = transform.position + Vector3.up * groundProjectionYOffset;
-            UpdateRing(groundProjectionRing, groundCenter, Vector3.up, groundProjectionColor, groundLineWidth, lineAlphaMultiplier);
+            UpdateRing(groundProjectionRing, groundCenter, Vector3.up, activeGroundColor, groundLineWidth * lineWidthMultiplier, lineAlphaMultiplier);
         }
 
         private void UpdateVolumeMaterial(float alpha)
         {
-            Color color = fieldColor;
+            Color color = isCurrentFieldEnhanced ? enhancedFieldColor : fieldColor;
             color.a = Mathf.Clamp01(alpha);
 
             Material material = visualRenderer.sharedMaterial;
@@ -667,8 +767,10 @@ namespace LeiHuo.Gameplay.TemperatureField
                 return;
             }
 
-            float gizmoRadius = Application.isPlaying && currentRadius > 0f ? currentRadius : maxRadius;
-            Color gizmoColor = fieldColor;
+            bool enhancedPreview = Application.isPlaying ? isCurrentFieldEnhanced || hasStoredEnhancement : hasStoredEnhancement;
+            float previewMaxRadius = enhancedPreview ? maxRadius * enhancedRadiusMultiplier : maxRadius;
+            float gizmoRadius = Application.isPlaying && currentRadius > 0f ? currentRadius : previewMaxRadius;
+            Color gizmoColor = enhancedPreview ? enhancedFieldColor : fieldColor;
             gizmoColor.a = 0.18f;
             Gizmos.color = gizmoColor;
             Gizmos.DrawWireSphere(GetFieldCenter(), gizmoRadius);

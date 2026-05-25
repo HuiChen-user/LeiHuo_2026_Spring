@@ -65,7 +65,7 @@ namespace LeiHuo.Gameplay.LevelMechanics
         public void OnEnterTemperatureField(TemperatureFieldContext context)
         {
             isInsideTemperatureField = true;
-            Condense();
+            Condense(context.IsEnhanced);
         }
 
         public void OnStayTemperatureField(TemperatureFieldContext context)
@@ -74,11 +74,11 @@ namespace LeiHuo.Gameplay.LevelMechanics
 
             if (activeIce == null)
             {
-                Condense();
+                Condense(context.IsEnhanced);
                 return;
             }
 
-            activeIce.MarkInsideTemperatureField();
+            activeIce.MarkInsideTemperatureField(context.IsEnhanced);
         }
 
         public void OnExitTemperatureField(TemperatureFieldContext context)
@@ -103,16 +103,17 @@ namespace LeiHuo.Gameplay.LevelMechanics
             ConfigureVaporTrigger();
         }
 
-        private void Condense()
+        private void Condense(bool isEnhancedField)
         {
             if (activeIce != null)
             {
-                activeIce.MarkInsideTemperatureField();
+                activeIce.MarkInsideTemperatureField(isEnhancedField);
                 return;
             }
 
             GameObject iceObject = CreateIceObject();
             activeIce = ConfigureIceObject(iceObject);
+            activeIce.MarkInsideTemperatureField(isEnhancedField);
             SetVaporVisible(!hideVaporWhileFrozen);
 
             if (logStateChanges)
