@@ -96,7 +96,7 @@ LightmapSettings:
     m_ExportTrainingData: 0
     m_TrainingDataDestination: TrainingData
     m_LightProbeSampleCountMultiplier: 4
-  m_LightingDataAsset: {fileID: 0}
+  m_LightingDataAsset: {fileID: 112000000, guid: 7c0fdcf97254504409cb3bc7ff5d0fdf, type: 2}
   m_LightingSettings: {fileID: 0}
 --- !u!196 &4
 NavMeshSettings:
@@ -1968,6 +1968,8 @@ MonoBehaviour:
   iceSize: {x: 1, y: 1, z: 1}
   iceEulerRotation: {x: 0, y: 0, z: 0}
   fallbackIceMaterial: {fileID: 2100000, guid: a269ddbe957e4584480f3f6a188a49b8, type: 2}
+  enhancedIceMaterial: {fileID: 2100000, guid: 59cd163e28c7a8d478443ca4eb3120e0, type: 2}
+  waterMaterial: {fileID: 2100000, guid: 2b318e4eb46d1f14fa5d8219daee5ffb, type: 2}
   parentIceToVapor: 0
   usePrefabScale: 0
   ensureIceCollider: 1
