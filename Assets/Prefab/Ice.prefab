@@ -119,7 +119,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 96dee98fd921408086188a9e566ff948, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  meltDelayAfterLeavingField: 3
+  meltDelayAfterLeavingField: 10
   meltMode: 0
   shrinkSpeed: 0.5
   minimumScaleBeforeDestroy: 0.05
@@ -134,7 +134,7 @@ MonoBehaviour:
   applyEnhancedMaterial: 1
   applyWaterMaterialOnMelt: 1
   restoreOriginalMaterialWhenRefrozen: 1
-  meltToWaterDuration: 1.2
+  meltToWaterDuration: 5
   waterSpreadMultiplier: 1.6
   waterThicknessMultiplier: 0.08
   keepBottomAnchored: 1
@@ -163,7 +163,7 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   disableColliderWhenWater: 1
-  waterLifetime: 2.5
+  waterLifetime: 8
   destroyWaterAfterLifetime: 1
   showWaterPreviewGizmo: 1
   waterPreviewColor: {r: 0.2, g: 0.75, b: 1, a: 0.35}

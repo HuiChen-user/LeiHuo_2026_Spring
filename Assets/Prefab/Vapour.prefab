@@ -1,0 +1,168 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &336945243895180581
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2889347182244512227}
+  - component: {fileID: 4772592425312576225}
+  - component: {fileID: 2931694644852280976}
+  m_Layer: 0
+  m_Name: Vapour
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2889347182244512227
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 336945243895180581}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 5.407, y: 0.872, z: 11.236}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 4553472865341614558}
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &4772592425312576225
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 336945243895180581}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0778b1aade44477586e3c406a2969e80, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ensureVaporTrigger: 1
+  vaporTriggerShape: 1
+  vaporTriggerRadius: 0.75
+  vaporTriggerSize: {x: 1, y: 1, z: 1}
+  vaporTriggerCenter: {x: 0, y: 0, z: 0}
+  icePrefab: {fileID: 6951557292287125125, guid: ab57204b4927a9c4abcf6287259b1678, type: 3}
+  iceLocalOffset: {x: 0, y: 0, z: 0}
+  iceSize: {x: 1, y: 1, z: 1}
+  iceEulerRotation: {x: 0, y: 0, z: 0}
+  fallbackIceMaterial: {fileID: 2100000, guid: a269ddbe957e4584480f3f6a188a49b8, type: 2}
+  enhancedIceMaterial: {fileID: 2100000, guid: 59cd163e28c7a8d478443ca4eb3120e0, type: 2}
+  waterMaterial: {fileID: 2100000, guid: 2b318e4eb46d1f14fa5d8219daee5ffb, type: 2}
+  parentIceToVapor: 0
+  usePrefabScale: 0
+  ensureIceCollider: 1
+  iceColliderIsTrigger: 0
+  iceColliderSize: {x: 1, y: 1, z: 1}
+  ensureCarryableIce: 1
+  meltDelayAfterLeavingField: 3
+  meltMode: 0
+  shrinkSpeed: 0.5
+  minimumScaleBeforeDestroy: 0.05
+  vaporParticles: {fileID: 3343287890224037799, guid: 23a22bb5af7159e4281b56075ea0424d, type: 3}
+  vaporRenderers:
+  - {fileID: 5153341888821066072}
+  hideVaporWhileFrozen: 1
+  stopParticlesWithClear: 1
+  restoreVaporAfterIceMelted: 1
+  showPreviewGizmos: 1
+  icePreviewColor: {r: 0.35, g: 0.85, b: 1, a: 0.35}
+  triggerPreviewColor: {r: 0.8, g: 1, b: 1, a: 0.18}
+  logStateChanges: 0
+--- !u!135 &2931694644852280976
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 336945243895180581}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Radius: 0.6338593
+  m_Center: {x: 0, y: -0.11614072, z: 0}
+--- !u!1001 &1851801532822448959
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 2889347182244512227}
+    m_Modifications:
+    - target: {fileID: 2775278248177091297, guid: 23a22bb5af7159e4281b56075ea0424d, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2775278248177091297, guid: 23a22bb5af7159e4281b56075ea0424d, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2775278248177091297, guid: 23a22bb5af7159e4281b56075ea0424d, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2775278248177091297, guid: 23a22bb5af7159e4281b56075ea0424d, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2775278248177091297, guid: 23a22bb5af7159e4281b56075ea0424d, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2775278248177091297, guid: 23a22bb5af7159e4281b56075ea0424d, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2775278248177091297, guid: 23a22bb5af7159e4281b56075ea0424d, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2775278248177091297, guid: 23a22bb5af7159e4281b56075ea0424d, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: -90
+      objectReference: {fileID: 0}
+    - target: {fileID: 2775278248177091297, guid: 23a22bb5af7159e4281b56075ea0424d, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2775278248177091297, guid: 23a22bb5af7159e4281b56075ea0424d, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3065381367200199414, guid: 23a22bb5af7159e4281b56075ea0424d, type: 3}
+      propertyPath: m_Name
+      value: VapourEffect
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 23a22bb5af7159e4281b56075ea0424d, type: 3}
+--- !u!4 &4553472865341614558 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 2775278248177091297, guid: 23a22bb5af7159e4281b56075ea0424d, type: 3}
+  m_PrefabInstance: {fileID: 1851801532822448959}
+  m_PrefabAsset: {fileID: 0}
+--- !u!199 &5153341888821066072 stripped
+ParticleSystemRenderer:
+  m_CorrespondingSourceObject: {fileID: 6788809795143340647, guid: 23a22bb5af7159e4281b56075ea0424d, type: 3}
+  m_PrefabInstance: {fileID: 1851801532822448959}
+  m_PrefabAsset: {fileID: 0}
