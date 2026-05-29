@@ -61,6 +61,11 @@ namespace LeiHuo.Gameplay.TemperatureField
         [SerializeField] private float groundProjectionYOffset = 0.03f;
         [SerializeField] private bool showSceneGizmo = true;
 
+        [Header("High Temperature UI")]
+        [SerializeField] private bool showHighTemperatureScreenFrame = true;
+        [SerializeField] private Color highTemperatureFrameColor = new Color(1f, 0.08f, 0.02f, 0.18f);
+        [SerializeField, Min(1f)] private float highTemperatureFrameThickness = 18f;
+
         public float CurrentRadius => currentRadius;
         public bool IsActive => state != FieldState.Idle;
         public bool HasStoredEnhancement => hasStoredEnhancement;
@@ -145,6 +150,8 @@ namespace LeiHuo.Gameplay.TemperatureField
             boundaryLineWidth = Mathf.Max(0.005f, boundaryLineWidth);
             groundLineWidth = Mathf.Max(0.005f, groundLineWidth);
             ringSegments = Mathf.Clamp(ringSegments, 16, 192);
+            highTemperatureFrameColor.a = Mathf.Clamp01(highTemperatureFrameColor.a);
+            highTemperatureFrameThickness = Mathf.Max(1f, highTemperatureFrameThickness);
 
             if (initialRadius > maxRadius)
             {
@@ -447,6 +454,7 @@ namespace LeiHuo.Gameplay.TemperatureField
             float targetRadius = GetCurrentMaxRadius();
             float normalizedRadius = targetRadius <= 0f ? 0f : Mathf.Clamp01(currentRadius / targetRadius);
             float strengthMultiplier = isCurrentFieldEnhanced ? enhancedStrengthMultiplier : 1f;
+            HighTemperatureZone.TryGetZoneAtPosition(transform.position, out HighTemperatureZone highTemperatureZone);
 
             return new TemperatureFieldContext(
                 gameObject,
@@ -456,7 +464,8 @@ namespace LeiHuo.Gameplay.TemperatureField
                 normalizedRadius,
                 elapsedTime,
                 isCurrentFieldEnhanced,
-                strengthMultiplier);
+                strengthMultiplier,
+                highTemperatureZone);
         }
 
         private float GetCurrentMaxRadius()
@@ -774,6 +783,26 @@ namespace LeiHuo.Gameplay.TemperatureField
             gizmoColor.a = 0.18f;
             Gizmos.color = gizmoColor;
             Gizmos.DrawWireSphere(GetFieldCenter(), gizmoRadius);
+        }
+
+        private void OnGUI()
+        {
+            if (!showHighTemperatureScreenFrame ||
+                !HighTemperatureZone.TryGetZoneAtPosition(transform.position, out _))
+            {
+                return;
+            }
+
+            Color previousColor = GUI.color;
+            GUI.color = highTemperatureFrameColor;
+
+            float thickness = highTemperatureFrameThickness;
+            GUI.DrawTexture(new Rect(0f, 0f, Screen.width, thickness), Texture2D.whiteTexture);
+            GUI.DrawTexture(new Rect(0f, Screen.height - thickness, Screen.width, thickness), Texture2D.whiteTexture);
+            GUI.DrawTexture(new Rect(0f, 0f, thickness, Screen.height), Texture2D.whiteTexture);
+            GUI.DrawTexture(new Rect(Screen.width - thickness, 0f, thickness, Screen.height), Texture2D.whiteTexture);
+
+            GUI.color = previousColor;
         }
     }
 }

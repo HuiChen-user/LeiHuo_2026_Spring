@@ -46,7 +46,11 @@ namespace LeiHuo.Gameplay.LevelMechanics
         private int targetPointIndex;
         private int direction = 1;
         private float stopHoldTimer;
+        private float slowHoldTimer;
+        private float currentSlowSpeedMultiplier = 1f;
         private bool isInsideTemperatureField;
+        private bool isSlowedByHighTemperatureField;
+        private bool isStoppedByTemperatureField;
         private bool isMoving;
         private bool hasReachedEnd;
 
@@ -57,7 +61,8 @@ namespace LeiHuo.Gameplay.LevelMechanics
         public Color RouteColor => routeColor;
         public Color StoppedColor => stoppedColor;
         public float RoutePointGizmoRadius => routePointGizmoRadius;
-        public bool IsStoppedByTemperature => isInsideTemperatureField || stopHoldTimer > 0f;
+        public bool IsStoppedByTemperature => isStoppedByTemperatureField || stopHoldTimer > 0f;
+        public bool IsSlowedByHighTemperatureField => isSlowedByHighTemperatureField || slowHoldTimer > 0f;
         public bool IsMoving => isMoving;
 
         private void Reset()
@@ -114,33 +119,45 @@ namespace LeiHuo.Gameplay.LevelMechanics
 
         public void OnEnterTemperatureField(TemperatureFieldContext context)
         {
-            isInsideTemperatureField = true;
-            stopHoldTimer = stopDurationAfterLeavingField;
+            ApplyTemperatureFieldEffect(context, true);
 
             if (logStateChanges)
             {
-                Debug.Log($"{name} stopped inside temperature field.", this);
+                Debug.Log($"{name} affected by temperature field.", this);
             }
         }
 
         public void OnStayTemperatureField(TemperatureFieldContext context)
         {
-            isInsideTemperatureField = true;
-
-            if (resetHoldTimerWhileStayingInField)
-            {
-                stopHoldTimer = stopDurationAfterLeavingField;
-            }
+            ApplyTemperatureFieldEffect(context, resetHoldTimerWhileStayingInField);
         }
 
         public void OnExitTemperatureField(TemperatureFieldContext context)
         {
             isInsideTemperatureField = false;
-            stopHoldTimer = stopDurationAfterLeavingField;
+            isStoppedByTemperatureField = false;
+            isSlowedByHighTemperatureField = false;
+
+            if (context.IsCasterInHighTemperatureZone)
+            {
+                if (context.IsEnhanced)
+                {
+                    stopHoldTimer = context.HotZoneEnhancedStopDuration;
+                }
+                else
+                {
+                    slowHoldTimer = context.HotZoneUncontrolledSlowDuration;
+                    currentSlowSpeedMultiplier = Mathf.Clamp01(context.HotZoneUncontrolledSlowSpeedMultiplier);
+                }
+            }
+            else
+            {
+                stopHoldTimer = stopDurationAfterLeavingField;
+            }
 
             if (logStateChanges)
             {
-                Debug.Log($"{name} left temperature field, holding for {stopHoldTimer:0.00}s.", this);
+                Debug.Log($"{name} left temperature field.", this);
             }
         }
 
@@ -192,6 +209,7 @@ namespace LeiHuo.Gameplay.LevelMechanics
         private void TickMovement(float deltaTime)
         {
             TickStopHoldTimer(deltaTime);
+            TickSlowHoldTimer(deltaTime);
 
             if (!CanMove() || deltaTime <= 0f)
             {
@@ -200,7 +218,7 @@ namespace LeiHuo.Gameplay.LevelMechanics
 
             Vector3 currentPosition = body != null && useRigidbodyWhenAvailable ? body.position : transform.position;
             Vector3 targetPosition = GetWorldPoint(targetPointIndex);
-            float maxDistanceDelta = moveSpeed * deltaTime;
+            float maxDistanceDelta = moveSpeed * GetCurrentSpeedMultiplier() * deltaTime;
             Vector3 nextPosition = Vector3.MoveTowards(currentPosition, targetPosition, maxDistanceDelta);
             ApplyPosition(nextPosition);
             RotateTowardsMovement(nextPosition - currentPosition, deltaTime);
@@ -213,7 +231,7 @@ namespace LeiHuo.Gameplay.LevelMechanics
 
         private void TickStopHoldTimer(float deltaTime)
         {
-            if (isInsideTemperatureField || stopHoldTimer <= 0f || deltaTime <= 0f)
+            if (isStoppedByTemperatureField || stopHoldTimer <= 0f || deltaTime <= 0f)
             {
                 return;
             }
@@ -226,6 +244,25 @@ namespace LeiHuo.Gameplay.LevelMechanics
             }
         }
 
+        private void TickSlowHoldTimer(float deltaTime)
+        {
+            if (isSlowedByHighTemperatureField || slowHoldTimer <= 0f || deltaTime <= 0f)
+            {
+                return;
+            }
+
+            slowHoldTimer = Mathf.Max(0f, slowHoldTimer - deltaTime);
+
+            if (slowHoldTimer <= 0f)
+            {
+                currentSlowSpeedMultiplier = 1f;
+                if (logStateChanges)
+                {
+                    Debug.Log($"{name} resumed full route speed.", this);
+                }
+            }
+        }
+
         private bool CanMove()
         {
             return isMoving &&
@@ -234,6 +271,56 @@ namespace LeiHuo.Gameplay.LevelMechanics
                    routePoints != null &&
                    routePoints.Count >= 2 &&
                    !IsStoppedByTemperature;
+        }
+
+        private float GetCurrentSpeedMultiplier()
+        {
+            return IsSlowedByHighTemperatureField ? Mathf.Clamp01(currentSlowSpeedMultiplier) : 1f;
+        }
+
+        private void ApplyTemperatureFieldEffect(TemperatureFieldContext context, bool refreshDuration)
+        {
+            isInsideTemperatureField = true;
+
+            if (context.IsCasterInHighTemperatureZone)
+            {
+                if (context.IsEnhanced)
+                {
+                    isStoppedByTemperatureField = true;
+                    isSlowedByHighTemperatureField = false;
+                    slowHoldTimer = 0f;
+                    currentSlowSpeedMultiplier = 1f;
+
+                    if (refreshDuration)
+                    {
+                        stopHoldTimer = context.HotZoneEnhancedStopDuration;
+                    }
+                }
+                else
+                {
+                    isStoppedByTemperatureField = false;
+                    stopHoldTimer = 0f;
+                    isSlowedByHighTemperatureField = true;
+                    currentSlowSpeedMultiplier = Mathf.Clamp01(context.HotZoneUncontrolledSlowSpeedMultiplier);
+
+                    if (refreshDuration)
+                    {
+                        slowHoldTimer = context.HotZoneUncontrolledSlowDuration;
+                    }
+                }
+
+                return;
+            }
+
+            isStoppedByTemperatureField = true;
+            isSlowedByHighTemperatureField = false;
+            slowHoldTimer = 0f;
+            currentSlowSpeedMultiplier = 1f;
+
+            if (refreshDuration)
+            {
+                stopHoldTimer = stopDurationAfterLeavingField;
+            }
         }
 
         private void ApplyPosition(Vector3 nextPosition)

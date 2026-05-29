@@ -70,6 +70,11 @@ namespace LeiHuo.Gameplay.LevelMechanics
         public void OnEnterTemperatureField(TemperatureFieldContext context)
         {
             isInsideTemperatureField = true;
+            if (!CanCondense(context))
+            {
+                return;
+            }
+
             Condense(context.IsEnhanced);
         }
 
@@ -79,6 +84,11 @@ namespace LeiHuo.Gameplay.LevelMechanics
 
             if (activeIce == null)
             {
+                if (!CanCondense(context))
+                {
+                    return;
+                }
+
                 Condense(context.IsEnhanced);
                 return;
             }
@@ -94,6 +104,13 @@ namespace LeiHuo.Gameplay.LevelMechanics
             {
                 activeIce.MarkOutsideTemperatureField();
             }
+        }
+
+        private bool CanCondense(TemperatureFieldContext context)
+        {
+            return !context.IsCasterInHighTemperatureZone ||
+                   !context.HotZoneRequiresEnhancementToFreezeVapor ||
+                   context.IsEnhanced;
         }
 
         private void Reset()

@@ -12,6 +12,12 @@ namespace LeiHuo.Gameplay.TemperatureField
         public float ElapsedTime;
         public bool IsEnhanced;
         public float StrengthMultiplier;
+        public bool IsCasterInHighTemperatureZone;
+        public HighTemperatureZone HighTemperatureZone;
+        public bool HotZoneRequiresEnhancementToFreezeVapor;
+        public float HotZoneUncontrolledSlowSpeedMultiplier;
+        public float HotZoneUncontrolledSlowDuration;
+        public float HotZoneEnhancedStopDuration;
 
         public TemperatureFieldContext(
             GameObject caster,
@@ -21,7 +27,8 @@ namespace LeiHuo.Gameplay.TemperatureField
             float normalizedRadius,
             float elapsedTime,
             bool isEnhanced = false,
-            float strengthMultiplier = 1f)
+            float strengthMultiplier = 1f,
+            HighTemperatureZone highTemperatureZone = null)
         {
             Caster = caster;
             CasterTransform = casterTransform;
@@ -31,6 +38,12 @@ namespace LeiHuo.Gameplay.TemperatureField
             ElapsedTime = elapsedTime;
             IsEnhanced = isEnhanced;
             StrengthMultiplier = Mathf.Max(1f, strengthMultiplier);
+            IsCasterInHighTemperatureZone = highTemperatureZone != null;
+            HighTemperatureZone = highTemperatureZone;
+            HotZoneRequiresEnhancementToFreezeVapor = highTemperatureZone == null || highTemperatureZone.RequireEnhancedFieldToFreezeVapor;
+            HotZoneUncontrolledSlowSpeedMultiplier = highTemperatureZone != null ? highTemperatureZone.UncontrolledSlowSpeedMultiplier : 1f;
+            HotZoneUncontrolledSlowDuration = highTemperatureZone != null ? highTemperatureZone.UncontrolledSlowDurationAfterLeavingField : 0f;
+            HotZoneEnhancedStopDuration = highTemperatureZone != null ? highTemperatureZone.EnhancedStopDurationAfterLeavingField : 0f;
         }
     }
 }
