@@ -61,6 +61,7 @@ namespace LeiHuo.Gameplay.LevelMechanics
         private Vector3 originalScale;
         private float timeWithoutField;
         private bool isInsideTemperatureField;
+        private bool isInsideColdZone;
         private bool isMelting;
         private bool hasBeenInsideTemperatureField;
         private bool shouldUseEnhancedMeltSettingsAfterExit;
@@ -79,6 +80,7 @@ namespace LeiHuo.Gameplay.LevelMechanics
         private System.Action<IceBlockTemperatureState> meltedCallback;
 
         public bool IsInsideTemperatureField => isInsideTemperatureField;
+        public bool IsInsideColdZone => isInsideColdZone;
         public bool IsMelting => isMelting;
         public bool IsUsingEnhancedMeltSettings => false;
         public float ActiveMeltDelayAfterLeavingField => meltDelayAfterLeavingField;
@@ -131,7 +133,9 @@ namespace LeiHuo.Gameplay.LevelMechanics
 
         private void Update()
         {
-            if (!hasBeenInsideTemperatureField || isInsideTemperatureField)
+            TickColdZoneState();
+
+            if (!hasBeenInsideTemperatureField || isInsideTemperatureField || isInsideColdZone)
             {
                 return;
             }
@@ -225,6 +229,37 @@ namespace LeiHuo.Gameplay.LevelMechanics
             timeWithoutField = 0f;
         }
 
+        public void MarkInsideColdZone()
+        {
+            hasBeenInsideTemperatureField = true;
+            isInsideColdZone = true;
+            timeWithoutField = 0f;
+            isMelting = false;
+            isWater = false;
+            hasReportedMeltComplete = false;
+            meltTimer = 0f;
+            waterTimer = 0f;
+
+            if (resetScaleWhenRefrozen)
+            {
+                transform.localScale = originalScale;
+            }
+
+            RestoreColliders();
+            ApplyCurrentIceMaterial();
+        }
+
+        public void MarkOutsideColdZone()
+        {
+            if (!isInsideColdZone)
+            {
+                return;
+            }
+
+            isInsideColdZone = false;
+            timeWithoutField = 0f;
+        }
+
         public void OnEnterTemperatureField(TemperatureFieldContext context)
         {
             MarkInsideTemperatureField(context.IsEnhanced);
@@ -238,6 +273,19 @@ namespace LeiHuo.Gameplay.LevelMechanics
         public void OnExitTemperatureField(TemperatureFieldContext context)
         {
             MarkOutsideTemperatureField();
+        }
+
+        private void TickColdZoneState()
+        {
+            bool isCurrentlyInsideColdZone = ColdTemperatureZone.TryGetZoneAtPosition(transform.position, out _);
+            if (isCurrentlyInsideColdZone)
+            {
+                MarkInsideColdZone();
+            }
+            else
+            {
+                MarkOutsideColdZone();
+            }
         }
 
         private void BeginMelting()

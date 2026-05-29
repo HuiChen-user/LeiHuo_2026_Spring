@@ -66,6 +66,11 @@ namespace LeiHuo.Gameplay.TemperatureField
         [SerializeField] private Color highTemperatureFrameColor = new Color(1f, 0.08f, 0.02f, 0.18f);
         [SerializeField, Min(1f)] private float highTemperatureFrameThickness = 18f;
 
+        [Header("Cold Temperature UI")]
+        [SerializeField] private bool showColdTemperatureScreenFrame = true;
+        [SerializeField] private Color coldTemperatureFrameColor = new Color(0.08f, 0.45f, 1f, 0.18f);
+        [SerializeField, Min(1f)] private float coldTemperatureFrameThickness = 18f;
+
         public float CurrentRadius => currentRadius;
         public bool IsActive => state != FieldState.Idle;
         public bool HasStoredEnhancement => hasStoredEnhancement;
@@ -152,6 +157,8 @@ namespace LeiHuo.Gameplay.TemperatureField
             ringSegments = Mathf.Clamp(ringSegments, 16, 192);
             highTemperatureFrameColor.a = Mathf.Clamp01(highTemperatureFrameColor.a);
             highTemperatureFrameThickness = Mathf.Max(1f, highTemperatureFrameThickness);
+            coldTemperatureFrameColor.a = Mathf.Clamp01(coldTemperatureFrameColor.a);
+            coldTemperatureFrameThickness = Mathf.Max(1f, coldTemperatureFrameThickness);
 
             if (initialRadius > maxRadius)
             {
@@ -787,16 +794,25 @@ namespace LeiHuo.Gameplay.TemperatureField
 
         private void OnGUI()
         {
-            if (!showHighTemperatureScreenFrame ||
-                !HighTemperatureZone.TryGetZoneAtPosition(transform.position, out _))
+            if (showHighTemperatureScreenFrame &&
+                HighTemperatureZone.TryGetZoneAtPosition(transform.position, out _))
             {
-                return;
+                DrawScreenFrame(highTemperatureFrameColor, highTemperatureFrameThickness);
             }
 
-            Color previousColor = GUI.color;
-            GUI.color = highTemperatureFrameColor;
+            if (showColdTemperatureScreenFrame &&
+                ColdTemperatureZone.TryGetZoneAtPosition(transform.position, out _))
+            {
+                DrawScreenFrame(coldTemperatureFrameColor, coldTemperatureFrameThickness);
+            }
+        }
 
-            float thickness = highTemperatureFrameThickness;
+        private void DrawScreenFrame(Color frameColor, float frameThickness)
+        {
+            Color previousColor = GUI.color;
+            GUI.color = frameColor;
+
+            float thickness = frameThickness;
             GUI.DrawTexture(new Rect(0f, 0f, Screen.width, thickness), Texture2D.whiteTexture);
             GUI.DrawTexture(new Rect(0f, Screen.height - thickness, Screen.width, thickness), Texture2D.whiteTexture);
             GUI.DrawTexture(new Rect(0f, 0f, thickness, Screen.height), Texture2D.whiteTexture);

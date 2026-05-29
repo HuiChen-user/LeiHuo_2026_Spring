@@ -63,6 +63,7 @@ namespace LeiHuo.Gameplay.LevelMechanics
 
         private IceBlockTemperatureState activeIce;
         private bool isInsideTemperatureField;
+        private bool isInsideColdZone;
 
         private Vector3 IceWorldPosition => transform.TransformPoint(iceLocalOffset);
         private Quaternion IceWorldRotation => transform.rotation * Quaternion.Euler(iceEulerRotation);
@@ -125,6 +126,11 @@ namespace LeiHuo.Gameplay.LevelMechanics
             ConfigureVaporTrigger();
         }
 
+        private void Update()
+        {
+            TickColdZoneState();
+        }
+
         private void Condense(bool isEnhancedField)
         {
             if (activeIce != null)
@@ -141,6 +147,32 @@ namespace LeiHuo.Gameplay.LevelMechanics
             if (logStateChanges)
             {
                 Debug.Log($"{name} condensed into ice.", this);
+            }
+        }
+
+        private void TickColdZoneState()
+        {
+            bool wasInsideColdZone = isInsideColdZone;
+            isInsideColdZone = ColdTemperatureZone.TryGetZoneAtPosition(transform.position, out _);
+
+            if (isInsideColdZone)
+            {
+                if (activeIce == null)
+                {
+                    Condense(false);
+                }
+                else
+                {
+                    activeIce.MarkInsideColdZone();
+                }
+
+                return;
+            }
+
+            if (wasInsideColdZone && activeIce != null && !isInsideTemperatureField)
+            {
+                activeIce.MarkOutsideColdZone();
+                activeIce.MarkOutsideTemperatureField();
             }
         }
 
@@ -284,7 +316,7 @@ namespace LeiHuo.Gameplay.LevelMechanics
                 activeIce = null;
             }
 
-            if (restoreVaporAfterIceMelted && !isInsideTemperatureField)
+            if (restoreVaporAfterIceMelted && !isInsideTemperatureField && !isInsideColdZone)
             {
                 SetVaporVisible(true);
             }

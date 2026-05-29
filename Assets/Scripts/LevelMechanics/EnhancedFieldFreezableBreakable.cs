@@ -45,6 +45,14 @@ namespace LeiHuo.Gameplay.LevelMechanics
             targetRenderers = GetComponentsInChildren<Renderer>();
         }
 
+        private void Update()
+        {
+            if (!isBroken && ColdTemperatureZone.TryGetZoneAtPosition(transform.position, out _))
+            {
+                SetFrozen(true);
+            }
+        }
+
         public void OnEnterTemperatureField(TemperatureFieldContext context)
         {
             TryFreezeFromField(context);
@@ -138,7 +146,7 @@ namespace LeiHuo.Gameplay.LevelMechanics
 
         private void TryFreezeFromField(TemperatureFieldContext context)
         {
-            if (freezeOnEnhancedFieldEnter && context.IsEnhanced)
+            if (freezeOnEnhancedFieldEnter && (context.IsEnhanced || ColdTemperatureZone.TryGetZoneAtPosition(transform.position, out _)))
             {
                 SetFrozen(true);
             }

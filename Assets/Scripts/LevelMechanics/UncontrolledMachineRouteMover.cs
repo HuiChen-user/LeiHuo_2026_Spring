@@ -49,6 +49,7 @@ namespace LeiHuo.Gameplay.LevelMechanics
         private float slowHoldTimer;
         private float currentSlowSpeedMultiplier = 1f;
         private bool isInsideTemperatureField;
+        private bool isInsideColdZone;
         private bool isSlowedByHighTemperatureField;
         private bool isStoppedByTemperatureField;
         private bool isMoving;
@@ -62,6 +63,7 @@ namespace LeiHuo.Gameplay.LevelMechanics
         public Color StoppedColor => stoppedColor;
         public float RoutePointGizmoRadius => routePointGizmoRadius;
         public bool IsStoppedByTemperature => isStoppedByTemperatureField || stopHoldTimer > 0f;
+        public bool IsStoppedByColdZone => isInsideColdZone;
         public bool IsSlowedByHighTemperatureField => isSlowedByHighTemperatureField || slowHoldTimer > 0f;
         public bool IsMoving => isMoving;
 
@@ -208,6 +210,7 @@ namespace LeiHuo.Gameplay.LevelMechanics
 
         private void TickMovement(float deltaTime)
         {
+            isInsideColdZone = ColdTemperatureZone.TryGetZoneAtPosition(transform.position, out _);
             TickStopHoldTimer(deltaTime);
             TickSlowHoldTimer(deltaTime);
 
@@ -270,6 +273,7 @@ namespace LeiHuo.Gameplay.LevelMechanics
                    moveSpeed > 0f &&
                    routePoints != null &&
                    routePoints.Count >= 2 &&
+                   !isInsideColdZone &&
                    !IsStoppedByTemperature;
         }
 
