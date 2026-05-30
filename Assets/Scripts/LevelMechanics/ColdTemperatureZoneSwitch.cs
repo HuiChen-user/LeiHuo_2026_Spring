@@ -100,6 +100,10 @@ namespace LeiHuo.Gameplay.LevelMechanics
                 }
 
                 zone.enabled = active;
+                if (active)
+                {
+                    HighTemperatureZone.DisableOverlappingZones(zone);
+                }
             }
 
             if (logStateChanges)

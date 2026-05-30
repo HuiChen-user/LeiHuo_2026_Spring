@@ -120,11 +120,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   meltDelayAfterLeavingField: 10
-  meltMode: 0
+  meltMode: 2
   shrinkSpeed: 0.5
   minimumScaleBeforeDestroy: 0.05
   useEnhancedMeltSettings: 1
-  enhancedMeltDelayAfterLeavingField: 4.5
+  enhancedMeltDelayAfterLeavingField: 15
   enhancedMeltMode: 2
   enhancedShrinkSpeed: 0.5
   enhancedMinimumScaleBeforeDestroy: 0.05
@@ -163,13 +163,18 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   disableColliderWhenWater: 1
-  waterLifetime: 8
+  waterLifetime: 20
   destroyWaterAfterLifetime: 1
   showWaterPreviewGizmo: 1
   waterPreviewColor: {r: 0.2, g: 0.75, b: 1, a: 0.35}
   resetScaleWhenRefrozen: 1
   destroyWhenMelted: 1
   logStateChanges: 0
+  enhancedIceDebug: 0
+  usingEnhancedMeltSettingsDebug: 0
+  activeMeltDelayAfterLeavingFieldDebug: 10
+  timeWithoutFieldDebug: 0
+  remainingMeltDelayDebug: 10
 --- !u!114 &8592208401123941420
 MonoBehaviour:
   m_ObjectHideFlags: 0

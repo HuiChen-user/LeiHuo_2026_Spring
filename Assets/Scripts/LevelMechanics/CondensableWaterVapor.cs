@@ -41,12 +41,15 @@ namespace LeiHuo.Gameplay.LevelMechanics
 
         [Header("Melt")]
         [SerializeField, Min(0f)] private float meltDelayAfterLeavingField = 1.5f;
-        [HideInInspector]
         [SerializeField] private IceBlockTemperatureState.MeltMode meltMode = IceBlockTemperatureState.MeltMode.MeltToWater;
-        [HideInInspector]
         [SerializeField, Min(0.01f)] private float shrinkSpeed = 1f;
-        [HideInInspector]
         [SerializeField, Min(0f)] private float minimumScaleBeforeDestroy = 0.05f;
+        [Tooltip("Use these longer melt settings when the vapor is frozen by an enhanced temperature field.")]
+        [SerializeField] private bool useEnhancedMeltSettings = true;
+        [SerializeField, Min(0f)] private float enhancedMeltDelayAfterLeavingField = 4.5f;
+        [SerializeField] private IceBlockTemperatureState.MeltMode enhancedMeltMode = IceBlockTemperatureState.MeltMode.MeltToWater;
+        [SerializeField, Min(0.01f)] private float enhancedShrinkSpeed = 0.5f;
+        [SerializeField, Min(0f)] private float enhancedMinimumScaleBeforeDestroy = 0.05f;
 
         [Header("Vapor Visual")]
         [SerializeField] private ParticleSystem vaporParticles;
@@ -225,6 +228,12 @@ namespace LeiHuo.Gameplay.LevelMechanics
             }
 
             iceState.ConfigureMaterials(enhancedIceMaterial, waterMaterial);
+            iceState.ConfigureEnhancedMeltSettings(
+                useEnhancedMeltSettings,
+                enhancedMeltDelayAfterLeavingField,
+                enhancedMeltMode,
+                enhancedShrinkSpeed,
+                enhancedMinimumScaleBeforeDestroy);
 
             Vector3 finalScale = usePrefabScale && icePrefab != null ? iceObject.transform.localScale : iceSize;
             iceState.Initialize(
@@ -359,6 +368,9 @@ namespace LeiHuo.Gameplay.LevelMechanics
             meltDelayAfterLeavingField = Mathf.Max(0f, meltDelayAfterLeavingField);
             shrinkSpeed = Mathf.Max(0.01f, shrinkSpeed);
             minimumScaleBeforeDestroy = Mathf.Max(0f, minimumScaleBeforeDestroy);
+            enhancedMeltDelayAfterLeavingField = Mathf.Max(0f, enhancedMeltDelayAfterLeavingField);
+            enhancedShrinkSpeed = Mathf.Max(0.01f, enhancedShrinkSpeed);
+            enhancedMinimumScaleBeforeDestroy = Mathf.Max(0f, enhancedMinimumScaleBeforeDestroy);
         }
 
         private Vector3 ClampVector3(Vector3 value, float minimum)

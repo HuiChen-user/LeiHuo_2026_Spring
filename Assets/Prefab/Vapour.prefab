@@ -65,9 +65,14 @@ MonoBehaviour:
   iceColliderSize: {x: 1, y: 1, z: 1}
   ensureCarryableIce: 1
   meltDelayAfterLeavingField: 3
-  meltMode: 0
+  meltMode: 2
   shrinkSpeed: 0.5
   minimumScaleBeforeDestroy: 0.05
+  useEnhancedMeltSettings: 1
+  enhancedMeltDelayAfterLeavingField: 4.5
+  enhancedMeltMode: 2
+  enhancedShrinkSpeed: 0.5
+  enhancedMinimumScaleBeforeDestroy: 0.05
   vaporParticles: {fileID: 3343287890224037799, guid: 23a22bb5af7159e4281b56075ea0424d, type: 3}
   vaporRenderers:
   - {fileID: 5153341888821066072}

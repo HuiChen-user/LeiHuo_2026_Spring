@@ -10,12 +10,19 @@ using UnityEngine.InputSystem;
 namespace LeiHuo.Gameplay.LevelMechanics
 {
     [DisallowMultipleComponent]
-    public class HighTemperatureZoneSwitch : MonoBehaviour
+    public class ThermalZoneModeSwitch : MonoBehaviour
     {
         private enum InteractionShape
         {
             Sphere,
             Box
+        }
+
+        private enum InitialMode
+        {
+            KeepSceneState,
+            HighTemperature,
+            ColdTemperature
         }
 
         [Header("Input")]
@@ -30,28 +37,33 @@ namespace LeiHuo.Gameplay.LevelMechanics
         [SerializeField] private bool requireTemperatureFieldController = true;
         [SerializeField, Min(1)] private int maxDetectedColliders = 16;
 
-        [Header("Controlled Zones")]
-        [SerializeField] private List<HighTemperatureZone> controlledZones = new List<HighTemperatureZone>();
-        [SerializeField] private bool disableControlledZonesOnStart = true;
+        [Header("Thermal Zones")]
+        [SerializeField] private List<HighTemperatureZone> highTemperatureZones = new List<HighTemperatureZone>();
+        [SerializeField] private List<ColdTemperatureZone> coldTemperatureZones = new List<ColdTemperatureZone>();
+        [SerializeField] private InitialMode initialMode = InitialMode.KeepSceneState;
         [SerializeField] private bool removeMissingZones = true;
         [SerializeField] private bool logStateChanges;
 
         [Header("Debug Preview")]
         [SerializeField] private bool showGizmos = true;
-        [SerializeField] private Color inactiveRangeColor = new Color(1f, 0.35f, 0.12f, 0.2f);
-        [SerializeField] private Color activeRangeColor = new Color(1f, 0.08f, 0.02f, 0.32f);
-        [SerializeField] private Color wireColor = new Color(1f, 0.2f, 0.08f, 0.9f);
-        [SerializeField] private Color targetLineColor = new Color(1f, 0.55f, 0.18f, 0.85f);
+        [SerializeField] private Color highModeRangeColor = new Color(1f, 0.18f, 0.05f, 0.28f);
+        [SerializeField] private Color coldModeRangeColor = new Color(0.08f, 0.45f, 1f, 0.28f);
+        [SerializeField] private Color wireColor = new Color(0.9f, 0.95f, 1f, 0.9f);
+        [SerializeField] private Color highTargetLineColor = new Color(1f, 0.45f, 0.15f, 0.85f);
+        [SerializeField] private Color coldTargetLineColor = new Color(0.35f, 0.8f, 1f, 0.85f);
 
         private Collider[] overlapBuffer;
         private bool isPlayerInRange;
 
         public bool ShowGizmos => showGizmos;
         public Color WireColor => wireColor;
-        public Color TargetLineColor => targetLineColor;
+        public Color HighTargetLineColor => highTargetLineColor;
+        public Color ColdTargetLineColor => coldTargetLineColor;
         public bool IsPlayerInRange => isPlayerInRange;
-        public bool AreAllZonesActive => GetValidZoneCount() > 0 && GetActiveZoneCount() == GetValidZoneCount();
-        public IReadOnlyList<HighTemperatureZone> ControlledZones => controlledZones;
+        public bool IsHighModeActive => GetActiveHighZoneCount() > 0 && GetActiveColdZoneCount() == 0;
+        public bool IsColdModeActive => GetActiveColdZoneCount() > 0 && GetActiveHighZoneCount() == 0;
+        public IReadOnlyList<HighTemperatureZone> HighTemperatureZones => highTemperatureZones;
+        public IReadOnlyList<ColdTemperatureZone> ColdTemperatureZones => coldTemperatureZones;
 
         private Vector3 InteractionWorldCenter => transform.TransformPoint(interactionCenterOffset);
 
@@ -62,9 +74,13 @@ namespace LeiHuo.Gameplay.LevelMechanics
 
         private void Start()
         {
-            if (disableControlledZonesOnStart)
+            if (initialMode == InitialMode.HighTemperature)
             {
-                SetControlledZonesActive(false);
+                SetHighTemperatureMode();
+            }
+            else if (initialMode == InitialMode.ColdTemperature)
+            {
+                SetColdTemperatureMode();
             }
         }
 
@@ -74,50 +90,50 @@ namespace LeiHuo.Gameplay.LevelMechanics
 
             if (isPlayerInRange && WasInteractionPressedThisFrame())
             {
-                ToggleControlledZones();
+                ToggleMode();
             }
         }
 
-        public void ToggleControlledZones()
+        public void ToggleMode()
         {
-            bool targetActive = !AreAllZonesActive;
-            SetControlledZonesActive(targetActive);
-        }
-
-        public void SetControlledZonesActive(bool active)
-        {
-            for (int i = controlledZones.Count - 1; i >= 0; i--)
+            if (IsHighModeActive)
             {
-                HighTemperatureZone zone = controlledZones[i];
-                if (zone == null)
-                {
-                    if (removeMissingZones)
-                    {
-                        controlledZones.RemoveAt(i);
-                    }
-
-                    continue;
-                }
-
-                zone.enabled = active;
-                if (active)
-                {
-                    ColdTemperatureZone.DisableOverlappingZones(zone);
-                }
+                SetColdTemperatureMode();
             }
+            else
+            {
+                SetHighTemperatureMode();
+            }
+        }
+
+        public void SetHighTemperatureMode()
+        {
+            SetColdZonesActive(false);
+            SetHighZonesActive(true);
 
             if (logStateChanges)
             {
-                Debug.Log($"{name} turned controlled high-temperature zones {(active ? "on" : "off")}.", this);
+                Debug.Log($"{name} switched thermal zones to high temperature.", this);
             }
         }
 
-        public int GetValidZoneCount()
+        public void SetColdTemperatureMode()
+        {
+            SetHighZonesActive(false);
+            SetColdZonesActive(true);
+
+            if (logStateChanges)
+            {
+                Debug.Log($"{name} switched thermal zones to cold temperature.", this);
+            }
+        }
+
+        public int GetValidHighZoneCount()
         {
             int count = 0;
-            for (int i = 0; i < controlledZones.Count; i++)
+            for (int i = 0; i < highTemperatureZones.Count; i++)
             {
-                if (controlledZones[i] != null)
+                if (highTemperatureZones[i] != null)
                 {
                     count++;
                 }
@@ -126,12 +142,40 @@ namespace LeiHuo.Gameplay.LevelMechanics
             return count;
         }
 
-        public int GetActiveZoneCount()
+        public int GetValidColdZoneCount()
         {
             int count = 0;
-            for (int i = 0; i < controlledZones.Count; i++)
+            for (int i = 0; i < coldTemperatureZones.Count; i++)
             {
-                if (controlledZones[i] != null && controlledZones[i].isActiveAndEnabled)
+                if (coldTemperatureZones[i] != null)
+                {
+                    count++;
+                }
+            }
+
+            return count;
+        }
+
+        public int GetActiveHighZoneCount()
+        {
+            int count = 0;
+            for (int i = 0; i < highTemperatureZones.Count; i++)
+            {
+                if (highTemperatureZones[i] != null && highTemperatureZones[i].isActiveAndEnabled)
+                {
+                    count++;
+                }
+            }
+
+            return count;
+        }
+
+        public int GetActiveColdZoneCount()
+        {
+            int count = 0;
+            for (int i = 0; i < coldTemperatureZones.Count; i++)
+            {
+                if (coldTemperatureZones[i] != null && coldTemperatureZones[i].isActiveAndEnabled)
                 {
                     count++;
                 }
@@ -171,6 +215,52 @@ namespace LeiHuo.Gameplay.LevelMechanics
         public bool UsesSphereRange()
         {
             return interactionShape == InteractionShape.Sphere;
+        }
+
+        private void SetHighZonesActive(bool active)
+        {
+            for (int i = highTemperatureZones.Count - 1; i >= 0; i--)
+            {
+                HighTemperatureZone zone = highTemperatureZones[i];
+                if (zone == null)
+                {
+                    if (removeMissingZones)
+                    {
+                        highTemperatureZones.RemoveAt(i);
+                    }
+
+                    continue;
+                }
+
+                zone.enabled = active;
+                if (active)
+                {
+                    ColdTemperatureZone.DisableOverlappingZones(zone);
+                }
+            }
+        }
+
+        private void SetColdZonesActive(bool active)
+        {
+            for (int i = coldTemperatureZones.Count - 1; i >= 0; i--)
+            {
+                ColdTemperatureZone zone = coldTemperatureZones[i];
+                if (zone == null)
+                {
+                    if (removeMissingZones)
+                    {
+                        coldTemperatureZones.RemoveAt(i);
+                    }
+
+                    continue;
+                }
+
+                zone.enabled = active;
+                if (active)
+                {
+                    HighTemperatureZone.DisableOverlappingZones(zone);
+                }
+            }
         }
 
         private void DetectPlayerInRange()
@@ -284,7 +374,7 @@ namespace LeiHuo.Gameplay.LevelMechanics
             Matrix4x4 previousMatrix = Gizmos.matrix;
             Gizmos.matrix = Matrix4x4.TRS(InteractionWorldCenter, transform.rotation, Vector3.one);
 
-            Gizmos.color = AreAllZonesActive ? activeRangeColor : inactiveRangeColor;
+            Gizmos.color = IsColdModeActive ? coldModeRangeColor : highModeRangeColor;
             if (interactionShape == InteractionShape.Sphere)
             {
                 Gizmos.DrawSphere(Vector3.zero, interactionRadius);
@@ -309,12 +399,22 @@ namespace LeiHuo.Gameplay.LevelMechanics
 
         private void DrawTargetLinesGizmo()
         {
-            Gizmos.color = targetLineColor;
             Vector3 from = InteractionWorldCenter;
 
-            for (int i = 0; i < controlledZones.Count; i++)
+            Gizmos.color = highTargetLineColor;
+            for (int i = 0; i < highTemperatureZones.Count; i++)
             {
-                HighTemperatureZone zone = controlledZones[i];
+                HighTemperatureZone zone = highTemperatureZones[i];
+                if (zone != null)
+                {
+                    Gizmos.DrawLine(from, zone.transform.position);
+                }
+            }
+
+            Gizmos.color = coldTargetLineColor;
+            for (int i = 0; i < coldTemperatureZones.Count; i++)
+            {
+                ColdTemperatureZone zone = coldTemperatureZones[i];
                 if (zone != null)
                 {
                     Gizmos.DrawLine(from, zone.transform.position);

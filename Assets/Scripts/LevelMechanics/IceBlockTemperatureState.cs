@@ -14,23 +14,17 @@ namespace LeiHuo.Gameplay.LevelMechanics
 
         [Header("Melt Timing")]
         [SerializeField, Min(0f)] private float meltDelayAfterLeavingField = 1.5f;
-        [HideInInspector]
         [SerializeField] private MeltMode meltMode = MeltMode.MeltToWater;
-        [HideInInspector]
         [SerializeField, Min(0.01f)] private float shrinkSpeed = 1f;
-        [HideInInspector]
         [SerializeField, Min(0f)] private float minimumScaleBeforeDestroy = 0.05f;
 
         [Header("Enhanced Ice")]
-        [HideInInspector]
+        [Tooltip("Use the enhanced melt parameters after this ice has been frozen by an enhanced temperature field.")]
         [SerializeField] private bool useEnhancedMeltSettings;
-        [HideInInspector]
+        [Tooltip("Delay before enhanced ice starts melting after it leaves a temperature field or cold zone.")]
         [SerializeField, Min(0f)] private float enhancedMeltDelayAfterLeavingField = 4.5f;
-        [HideInInspector]
         [SerializeField] private MeltMode enhancedMeltMode = MeltMode.MeltToWater;
-        [HideInInspector]
         [SerializeField, Min(0.01f)] private float enhancedShrinkSpeed = 0.5f;
-        [HideInInspector]
         [SerializeField, Min(0f)] private float enhancedMinimumScaleBeforeDestroy = 0.05f;
         [SerializeField] private bool logEnhancedFieldHits;
 
@@ -58,13 +52,19 @@ namespace LeiHuo.Gameplay.LevelMechanics
         [SerializeField] private bool destroyWhenMelted = true;
         [SerializeField] private bool logStateChanges;
 
+        [Header("Runtime Debug")]
+        [SerializeField] private bool enhancedIceDebug;
+        [SerializeField] private bool usingEnhancedMeltSettingsDebug;
+        [SerializeField] private float activeMeltDelayAfterLeavingFieldDebug;
+        [SerializeField] private float timeWithoutFieldDebug;
+        [SerializeField] private float remainingMeltDelayDebug;
+
         private Vector3 originalScale;
         private float timeWithoutField;
         private bool isInsideTemperatureField;
         private bool isInsideColdZone;
         private bool isMelting;
         private bool hasBeenInsideTemperatureField;
-        private bool shouldUseEnhancedMeltSettingsAfterExit;
         private bool isEnhancedIce;
         private bool hasCachedOriginalMaterials;
         private Renderer[] cachedRenderers;
@@ -82,8 +82,8 @@ namespace LeiHuo.Gameplay.LevelMechanics
         public bool IsInsideTemperatureField => isInsideTemperatureField;
         public bool IsInsideColdZone => isInsideColdZone;
         public bool IsMelting => isMelting;
-        public bool IsUsingEnhancedMeltSettings => false;
-        public float ActiveMeltDelayAfterLeavingField => meltDelayAfterLeavingField;
+        public bool IsUsingEnhancedMeltSettings => useEnhancedMeltSettings && isEnhancedIce;
+        public float ActiveMeltDelayAfterLeavingField => IsUsingEnhancedMeltSettings ? enhancedMeltDelayAfterLeavingField : meltDelayAfterLeavingField;
         public MeltMode ActiveMeltMode => IsUsingEnhancedMeltSettings ? enhancedMeltMode : meltMode;
         public float ActiveShrinkSpeed => IsUsingEnhancedMeltSettings ? enhancedShrinkSpeed : shrinkSpeed;
         public float ActiveMinimumScaleBeforeDestroy => IsUsingEnhancedMeltSettings ? enhancedMinimumScaleBeforeDestroy : minimumScaleBeforeDestroy;
@@ -137,6 +137,7 @@ namespace LeiHuo.Gameplay.LevelMechanics
 
             if (!hasBeenInsideTemperatureField || isInsideTemperatureField || isInsideColdZone)
             {
+                UpdateRuntimeDebugValues();
                 return;
             }
 
@@ -150,6 +151,8 @@ namespace LeiHuo.Gameplay.LevelMechanics
             {
                 TickMeltToWater();
             }
+
+            UpdateRuntimeDebugValues();
         }
 
         public void Initialize(
@@ -189,6 +192,21 @@ namespace LeiHuo.Gameplay.LevelMechanics
             ApplyCurrentIceMaterial();
         }
 
+        public void ConfigureEnhancedMeltSettings(
+            bool useEnhancedSettings,
+            float enhancedMeltDelay,
+            MeltMode mode,
+            float enhancedMeltShrinkSpeed,
+            float enhancedMinimumScale)
+        {
+            useEnhancedMeltSettings = useEnhancedSettings;
+            enhancedMeltDelayAfterLeavingField = Mathf.Max(0f, enhancedMeltDelay);
+            enhancedMeltMode = mode;
+            enhancedShrinkSpeed = Mathf.Max(0.01f, enhancedMeltShrinkSpeed);
+            enhancedMinimumScaleBeforeDestroy = Mathf.Max(0f, enhancedMinimumScale);
+            UpdateRuntimeDebugValues();
+        }
+
         public void MarkInsideTemperatureField()
         {
             MarkInsideTemperatureField(false);
@@ -202,7 +220,6 @@ namespace LeiHuo.Gameplay.LevelMechanics
             isInsideTemperatureField = true;
             timeWithoutField = 0f;
             isMelting = false;
-            shouldUseEnhancedMeltSettingsAfterExit = useEnhancedMeltSettings && isEnhancedField;
             isEnhancedIce = isEnhancedIce || isEnhancedField;
             isWater = false;
             hasReportedMeltComplete = false;
@@ -503,6 +520,16 @@ namespace LeiHuo.Gameplay.LevelMechanics
             waterSpreadMultiplier = Mathf.Max(0.01f, waterSpreadMultiplier);
             waterThicknessMultiplier = Mathf.Max(0.001f, waterThicknessMultiplier);
             waterLifetime = Mathf.Max(0f, waterLifetime);
+            UpdateRuntimeDebugValues();
+        }
+
+        private void UpdateRuntimeDebugValues()
+        {
+            enhancedIceDebug = isEnhancedIce;
+            usingEnhancedMeltSettingsDebug = IsUsingEnhancedMeltSettings;
+            activeMeltDelayAfterLeavingFieldDebug = ActiveMeltDelayAfterLeavingField;
+            timeWithoutFieldDebug = timeWithoutField;
+            remainingMeltDelayDebug = Mathf.Max(0f, ActiveMeltDelayAfterLeavingField - timeWithoutField);
         }
 
         private void OnDrawGizmosSelected()

@@ -25,6 +25,30 @@ namespace LeiHuo.Gameplay.TemperatureField
         [SerializeField] private Color zoneColor = new Color(0.1f, 0.45f, 1f, 0.2f);
         [SerializeField] private Color wireColor = new Color(0.35f, 0.75f, 1f, 0.9f);
 
+        public ZoneShape CurrentShape => shape;
+        public Vector3 WorldCenter => transform.TransformPoint(centerOffset);
+        public Quaternion WorldRotation => transform.rotation;
+        public float Radius => radius;
+        public Vector3 BoxSize => GetSafeBoxSize();
+
+        public static void DisableOverlappingZones(HighTemperatureZone highZone)
+        {
+            for (int i = ActiveZones.Count - 1; i >= 0; i--)
+            {
+                ColdTemperatureZone candidate = ActiveZones[i];
+                if (candidate == null)
+                {
+                    ActiveZones.RemoveAt(i);
+                    continue;
+                }
+
+                if (candidate.isActiveAndEnabled && TemperatureZoneOverlapUtility.Overlaps(highZone, candidate))
+                {
+                    candidate.enabled = false;
+                }
+            }
+        }
+
         public static bool TryGetZoneAtPosition(Vector3 worldPosition, out ColdTemperatureZone zone)
         {
             for (int i = ActiveZones.Count - 1; i >= 0; i--)

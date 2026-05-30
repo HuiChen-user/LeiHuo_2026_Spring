@@ -37,6 +37,29 @@ namespace LeiHuo.Gameplay.TemperatureField
         public float UncontrolledSlowSpeedMultiplier => uncontrolledSlowSpeedMultiplier;
         public float UncontrolledSlowDurationAfterLeavingField => uncontrolledSlowDurationAfterLeavingField;
         public float EnhancedStopDurationAfterLeavingField => enhancedStopDurationAfterLeavingField;
+        public ZoneShape CurrentShape => shape;
+        public Vector3 WorldCenter => transform.TransformPoint(centerOffset);
+        public Quaternion WorldRotation => transform.rotation;
+        public float Radius => radius;
+        public Vector3 BoxSize => GetSafeBoxSize();
+
+        public static void DisableOverlappingZones(ColdTemperatureZone coldZone)
+        {
+            for (int i = ActiveZones.Count - 1; i >= 0; i--)
+            {
+                HighTemperatureZone candidate = ActiveZones[i];
+                if (candidate == null)
+                {
+                    ActiveZones.RemoveAt(i);
+                    continue;
+                }
+
+                if (candidate.isActiveAndEnabled && TemperatureZoneOverlapUtility.Overlaps(candidate, coldZone))
+                {
+                    candidate.enabled = false;
+                }
+            }
+        }
 
         public static bool TryGetZoneAtPosition(Vector3 worldPosition, out HighTemperatureZone zone)
         {
